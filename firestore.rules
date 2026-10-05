@@ -1,26 +1,17 @@
 rules_version = '2';
 
-service cloud.firestore {
-  match /databases/{database}/documents {
+service firebase.storage {
+  match /b/{bucket}/o {
 
-    match /messages/{messageId} {
+    match /voice-messages/{fileName} {
 
-      // Bisa membaca pesan
       allow read: if true;
 
-      // Bisa mengirim pesan
-      allow create: if
-        request.resource.data.nama is string
-        && request.resource.data.nama.size() >= 1
-        && request.resource.data.nama.size() <= 30
-        && request.resource.data.pesan is string
-        && request.resource.data.pesan.size() >= 1
-        && request.resource.data.pesan.size() <= 500;
+      allow write: if
+        request.resource != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('audio/.*');
 
-      // Tidak boleh mengubah pesan
-      allow update: if false;
-
-      // Tidak boleh menghapus pesan
       allow delete: if false;
     }
   }

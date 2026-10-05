@@ -13,6 +13,13 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
 
 // ===============================
 // FIREBASE CONFIG
@@ -31,7 +38,10 @@ const firebaseConfig = {
 // INIT FIREBASE
 // ===============================
 const app = initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
+
+const storage = getStorage(app);
 
 
 // ===============================
@@ -48,10 +58,14 @@ const logoutBtn = document.getElementById("logoutBtn");
 const messageForm = document.getElementById("messageForm");
 const messageInput = document.getElementById("messageInput");
 
-const messagesContainer = document.getElementById("messages");
+const messagesContainer =
+  document.getElementById("messages");
 
-const micBtn = document.getElementById("micBtn");
-const notificationSound = document.getElementById("notificationSound");
+const micBtn =
+  document.getElementById("micBtn");
+
+const notificationSound =
+  document.getElementById("notificationSound");
 
 const connectionStatus =
   document.getElementById("connectionStatus");
@@ -63,29 +77,36 @@ const participantLabel =
 // ===============================
 // USERNAME
 // ===============================
-let username = localStorage.getItem("chatUsername") || "";
+let username =
+  localStorage.getItem("chatUsername") || "";
 
 
 // ===============================
 // FIRESTORE
 // ===============================
-const messagesRef = collection(db, "messages");
+const messagesRef =
+  collection(db, "messages");
 
-const messagesQuery = query(
-  messagesRef,
-  orderBy("waktu", "asc")
-);
+const messagesQuery =
+  query(
+    messagesRef,
+    orderBy("waktu", "asc")
+  );
 
 
 // ===============================
 // SHOW CHAT
 // ===============================
 function showChat() {
+
   joinCard.classList.add("hidden");
+
   chatCard.classList.remove("hidden");
 
   if (participantLabel) {
-    participantLabel.textContent = `Masuk sebagai ${username}`;
+
+    participantLabel.textContent =
+      `Masuk sebagai ${username}`;
   }
 }
 
@@ -94,7 +115,9 @@ function showChat() {
 // SHOW JOIN
 // ===============================
 function showJoin() {
+
   joinCard.classList.remove("hidden");
+
   chatCard.classList.add("hidden");
 }
 
@@ -103,8 +126,11 @@ function showJoin() {
 // CEK LOGIN
 // ===============================
 if (username) {
+
   showChat();
+
 } else {
+
   showJoin();
 }
 
@@ -113,24 +139,37 @@ if (username) {
 // JOIN
 // ===============================
 if (joinForm) {
-  joinForm.addEventListener("submit", (event) => {
-    event.preventDefault();
 
-    const name = nameInput.value.trim();
+  joinForm.addEventListener(
+    "submit",
+    (event) => {
 
-    if (!name) {
-      alert("Masukkan nama terlebih dahulu.");
-      return;
+      event.preventDefault();
+
+      const name =
+        nameInput.value.trim();
+
+      if (!name) {
+
+        alert(
+          "Masukkan nama terlebih dahulu."
+        );
+
+        return;
+      }
+
+      username = name;
+
+      localStorage.setItem(
+        "chatUsername",
+        username
+      );
+
+      showChat();
+
+      messageInput.focus();
     }
-
-    username = name;
-
-    localStorage.setItem("chatUsername", username);
-
-    showChat();
-
-    messageInput.focus();
-  });
+  );
 }
 
 
@@ -138,15 +177,22 @@ if (joinForm) {
 // LOGOUT
 // ===============================
 if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("chatUsername");
 
-    username = "";
+  logoutBtn.addEventListener(
+    "click",
+    () => {
 
-    showJoin();
+      localStorage.removeItem(
+        "chatUsername"
+      );
 
-    nameInput.value = "";
-  });
+      username = "";
+
+      showJoin();
+
+      nameInput.value = "";
+    }
+  );
 }
 
 
@@ -154,34 +200,56 @@ if (logoutBtn) {
 // KIRIM PESAN TEKS
 // ===============================
 if (messageForm) {
-  messageForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
 
-    const text = messageInput.value.trim();
+  messageForm.addEventListener(
+    "submit",
+    async (event) => {
 
-    if (!text) return;
+      event.preventDefault();
 
-    if (!username) {
-      alert("Masukkan nama terlebih dahulu.");
-      return;
+      const text =
+        messageInput.value.trim();
+
+      if (!text) return;
+
+      if (!username) {
+
+        alert(
+          "Masukkan nama terlebih dahulu."
+        );
+
+        return;
+      }
+
+      try {
+
+        await addDoc(
+          messagesRef,
+          {
+            tipe: "text",
+            nama: username,
+            pesan: text,
+            waktu: serverTimestamp()
+          }
+        );
+
+        messageInput.value = "";
+
+        messageInput.focus();
+
+      } catch (error) {
+
+        console.error(
+          "Gagal mengirim pesan:",
+          error
+        );
+
+        alert(
+          "Pesan gagal dikirim."
+        );
+      }
     }
-
-    try {
-      await addDoc(messagesRef, {
-        tipe: "text",
-        nama: username,
-        pesan: text,
-        waktu: serverTimestamp()
-      });
-
-      messageInput.value = "";
-      messageInput.focus();
-
-    } catch (error) {
-      console.error("Gagal mengirim pesan:", error);
-      alert("Pesan gagal dikirim.");
-    }
-  });
+  );
 }
 
 
@@ -189,14 +257,19 @@ if (messageForm) {
 // FORMAT WAKTU
 // ===============================
 function formatTime(timestamp) {
+
   if (!timestamp) return "";
 
-  const date = timestamp.toDate();
+  const date =
+    timestamp.toDate();
 
-  return date.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  return date.toLocaleTimeString(
+    "id-ID",
+    {
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
 }
 
 
@@ -204,28 +277,53 @@ function formatTime(timestamp) {
 // BUAT PESAN TEKS
 // ===============================
 function createTextMessage(data) {
-  const message = document.createElement("div");
 
-  message.className = "message";
+  const message =
+    document.createElement("div");
+
+  message.className =
+    "message";
 
   if (data.nama === username) {
+
     message.classList.add("mine");
   }
 
-  const name = document.createElement("div");
-  name.className = "message-name";
-  name.textContent = data.nama || "Pengguna";
 
-  const text = document.createElement("div");
-  text.className = "message-text";
-  text.textContent = data.pesan || "";
+  const name =
+    document.createElement("div");
 
-  const time = document.createElement("div");
-  time.className = "message-time";
-  time.textContent = formatTime(data.waktu);
+  name.className =
+    "message-name";
+
+  name.textContent =
+    data.nama || "Pengguna";
+
+
+  const text =
+    document.createElement("div");
+
+  text.className =
+    "message-text";
+
+  text.textContent =
+    data.pesan || "";
+
+
+  const time =
+    document.createElement("div");
+
+  time.className =
+    "message-time";
+
+  time.textContent =
+    formatTime(data.waktu);
+
 
   message.appendChild(name);
+
   message.appendChild(text);
+
   message.appendChild(time);
 
   return message;
@@ -233,63 +331,88 @@ function createTextMessage(data) {
 
 
 // ===============================
-// BUAT PESAN MIC
+// BUAT PESAN AUDIO
 // ===============================
 function createAudioMessage(data) {
-  const message = document.createElement("div");
 
-  message.className = "message audio-message";
+  const message =
+    document.createElement("div");
+
+  message.className =
+    "message audio-message";
 
   if (data.nama === username) {
+
     message.classList.add("mine");
   }
 
 
   // NAMA
-  const name = document.createElement("div");
+  const name =
+    document.createElement("div");
 
-  name.className = "message-name";
+  name.className =
+    "message-name";
 
-  name.textContent = data.nama || "Pengguna";
+  name.textContent =
+    data.nama || "Pengguna";
 
 
-  // AUDIO
-  const audioBox = document.createElement("div");
+  // AUDIO BOX
+  const audioBox =
+    document.createElement("div");
 
-  audioBox.className = "audio-box";
+  audioBox.className =
+    "audio-box";
 
 
   // ICON MIC
-  const micIcon = document.createElement("span");
+  const micIcon =
+    document.createElement("span");
 
-  micIcon.className = "audio-icon";
+  micIcon.className =
+    "audio-icon";
 
-  micIcon.textContent = "🎙️";
+  micIcon.textContent =
+    "🎙️";
 
 
   // AUDIO PLAYER
-  const audio = document.createElement("audio");
+  const audio =
+    document.createElement("audio");
 
   audio.controls = true;
 
   audio.preload = "metadata";
 
-  audio.src = data.audioUrl;
+  audio.src =
+    data.audioUrl;
+
+
+  audioBox.appendChild(
+    micIcon
+  );
+
+  audioBox.appendChild(
+    audio
+  );
 
 
   // WAKTU
-  const time = document.createElement("div");
+  const time =
+    document.createElement("div");
 
-  time.className = "message-time";
+  time.className =
+    "message-time";
 
-  time.textContent = formatTime(data.waktu);
+  time.textContent =
+    formatTime(data.waktu);
 
-
-  audioBox.appendChild(micIcon);
-  audioBox.appendChild(audio);
 
   message.appendChild(name);
+
   message.appendChild(audioBox);
+
   message.appendChild(time);
 
   return message;
@@ -303,68 +426,79 @@ let firstSnapshot = true;
 
 onSnapshot(
   messagesQuery,
+
   (snapshot) => {
 
     messagesContainer.innerHTML = "";
 
-    if (snapshot.empty) {
-      const empty = document.createElement("div");
 
-      empty.className = "empty";
+    if (snapshot.empty) {
+
+      const empty =
+        document.createElement("div");
+
+      empty.className =
+        "empty";
 
       empty.textContent =
         "Belum ada pesan. Mulai percakapan!";
 
-      messagesContainer.appendChild(empty);
+      messagesContainer.appendChild(
+        empty
+      );
 
       return;
     }
 
 
-    snapshot.forEach((doc) => {
+    snapshot.forEach(
+      (doc) => {
 
-      const data = doc.data();
+        const data =
+          doc.data();
 
-      let messageElement;
+        let messageElement;
 
 
-      // PESAN MIC
-      if (data.tipe === "audio") {
+        if (data.tipe === "audio") {
 
-        messageElement =
-          createAudioMessage(data);
+          messageElement =
+            createAudioMessage(data);
 
+        } else {
+
+          messageElement =
+            createTextMessage(data);
+        }
+
+
+        messagesContainer.appendChild(
+          messageElement
+        );
       }
-
-      // PESAN TEKS
-      else {
-
-        messageElement =
-          createTextMessage(data);
-
-      }
+    );
 
 
-      messagesContainer.appendChild(messageElement);
-    });
-
-
-    // AUTO SCROLL
     messagesContainer.scrollTop =
       messagesContainer.scrollHeight;
 
 
-    // NOTIFIKASI
     if (!firstSnapshot) {
 
       try {
+
         notificationSound.currentTime = 0;
 
-        notificationSound.play().catch(() => {});
+        notificationSound
+          .play()
+          .catch(() => {});
+
       } catch (error) {
+
         console.log(error);
       }
     }
+
 
     firstSnapshot = false;
   },
@@ -377,6 +511,7 @@ onSnapshot(
     );
 
     if (connectionStatus) {
+
       connectionStatus.textContent =
         "Offline";
     }
@@ -385,10 +520,12 @@ onSnapshot(
 
 
 // ===============================
-// STATUS ONLINE
+// STATUS
 // ===============================
 if (connectionStatus) {
-  connectionStatus.textContent = "Online";
+
+  connectionStatus.textContent =
+    "Online";
 }
 
 
@@ -430,7 +567,7 @@ let recordingTimer = null;
 
 
 // ===============================
-// UPDATE TIMER MIC
+// UPDATE TIMER
 // ===============================
 function updateRecordingTime() {
 
@@ -438,7 +575,8 @@ function updateRecordingTime() {
 
   const elapsed =
     Math.floor(
-      (Date.now() - recordingStartTime) / 1000
+      (Date.now() - recordingStartTime) /
+      1000
     );
 
   const minutes =
@@ -454,6 +592,7 @@ function updateRecordingTime() {
 
 
   if (micBtn) {
+
     micBtn.textContent =
       `⏹️ ${timeText}`;
   }
@@ -461,7 +600,7 @@ function updateRecordingTime() {
 
 
 // ===============================
-// MULAI / STOP MIC
+// MIC
 // ===============================
 if (micBtn) {
 
@@ -475,9 +614,11 @@ if (micBtn) {
       if (!isRecording) {
 
         if (!username) {
+
           alert(
             "Masukkan nama terlebih dahulu."
           );
+
           return;
         }
 
@@ -501,7 +642,9 @@ if (micBtn) {
           mediaRecorder.ondataavailable =
             (event) => {
 
-              if (event.data.size > 0) {
+              if (
+                event.data.size > 0
+              ) {
 
                 audioChunks.push(
                   event.data
@@ -511,149 +654,130 @@ if (micBtn) {
 
 
           mediaRecorder.onstop =
-            () => {
+            async () => {
 
+              // =====================
+              // BLOB AUDIO
+              // =====================
               const audioBlob =
                 new Blob(
                   audioChunks,
                   {
-                    type: "audio/webm"
+                    type:
+                      "audio/webm"
                   }
                 );
 
 
-              const audioURL =
-                URL.createObjectURL(
-                  audioBlob
-                );
+              // =====================
+              // NAMA FILE
+              // =====================
+              const fileName =
+                `voice_${Date.now()}_${Math.random()
+                  .toString(36)
+                  .substring(2, 8)}.webm`;
 
 
               // =====================
-              // BUAT PESAN MIC LOKAL
+              // STORAGE PATH
               // =====================
-              const message =
-                document.createElement(
-                  "div"
+              const storageRef =
+                ref(
+                  storage,
+                  `voice-messages/${fileName}`
                 );
 
-              message.className =
-                "message audio-message mine";
+
+              try {
+
+                micBtn.disabled = true;
+
+                micBtn.textContent =
+                  "⏳ Mengupload...";
 
 
-              // NAMA
-              const name =
-                document.createElement(
-                  "div"
+                // ===================
+                // UPLOAD AUDIO
+                // ===================
+                await uploadBytes(
+                  storageRef,
+                  audioBlob,
+                  {
+                    contentType:
+                      "audio/webm"
+                  }
                 );
 
-              name.className =
-                "message-name";
 
-              name.textContent =
-                username;
-
-
-              // AUDIO BOX
-              const audioBox =
-                document.createElement(
-                  "div"
-                );
-
-              audioBox.className =
-                "audio-box";
-
-
-              // ICON MIC
-              const micIcon =
-                document.createElement(
-                  "span"
-                );
-
-              micIcon.className =
-                "audio-icon";
-
-              micIcon.textContent =
-                "🎙️";
-
-
-              // AUDIO
-              const audio =
-                document.createElement(
-                  "audio"
-                );
-
-              audio.controls = true;
-
-              audio.preload =
-                "metadata";
-
-              audio.src =
-                audioURL;
-
-
-              // WAKTU
-              const time =
-                document.createElement(
-                  "div"
-                );
-
-              time.className =
-                "message-time";
-
-              time.textContent =
-                new Date()
-                  .toLocaleTimeString(
-                    "id-ID",
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit"
-                    }
+                // ===================
+                // URL AUDIO
+                // ===================
+                const audioUrl =
+                  await getDownloadURL(
+                    storageRef
                   );
 
 
-              audioBox.appendChild(
-                micIcon
-              );
-
-              audioBox.appendChild(
-                audio
-              );
-
-
-              message.appendChild(
-                name
-              );
-
-              message.appendChild(
-                audioBox
-              );
-
-              message.appendChild(
-                time
-              );
+                // ===================
+                // SIMPAN KE FIRESTORE
+                // ===================
+                await addDoc(
+                  messagesRef,
+                  {
+                    tipe: "audio",
+                    nama: username,
+                    audioUrl: audioUrl,
+                    waktu:
+                      serverTimestamp()
+                  }
+                );
 
 
-              // TAMPILKAN
-              messagesContainer.appendChild(
-                message
-              );
+                console.log(
+                  "Voice message berhasil disimpan."
+                );
 
 
-              messagesContainer.scrollTop =
-                messagesContainer
-                  .scrollHeight;
+              } catch (error) {
+
+                console.error(
+                  "Upload audio gagal:",
+                  error
+                );
+
+                alert(
+                  "Voice message gagal disimpan. Cek Storage Rules Firebase."
+                );
+
+              } finally {
+
+                micBtn.disabled = false;
+
+                micBtn.classList.remove(
+                  "recording"
+                );
+
+                micBtn.textContent =
+                  "🎙️";
+              }
 
 
-              // MATIKAN MIC
+              // =====================
+              // MATIKAN MICROPHONE
+              // =====================
               stream
                 .getTracks()
                 .forEach(
-                  track =>
-                    track.stop()
+                  (track) => {
+                    track.stop();
+                  }
                 );
             };
 
 
+          // =======================
+          // MULAI REKAM
+          // =======================
           mediaRecorder.start();
 
           isRecording = true;
@@ -662,7 +786,6 @@ if (micBtn) {
             Date.now();
 
 
-          // TIMER
           recordingTimer =
             setInterval(
               updateRecordingTime,
@@ -718,7 +841,7 @@ if (micBtn) {
 
 
         micBtn.textContent =
-          "🎙️";
+          "⏳";
       }
     }
   );
