@@ -58,8 +58,6 @@ const notificationSound =
 // ==========================================
 let username = localStorage.getItem("chatUsername") || "";
 
-
-// Kalau nama sudah pernah disimpan
 if (username && nameInput) {
   nameInput.value = username;
 }
@@ -83,10 +81,8 @@ if (joinForm) {
 
     username = name;
 
-    // Simpan nama di browser
     localStorage.setItem("chatUsername", username);
 
-    // Tampilkan chat
     if (joinCard) {
       joinCard.classList.add("hidden");
     }
@@ -98,6 +94,7 @@ if (joinForm) {
     if (messageInput) {
       messageInput.focus();
     }
+
   });
 
 }
@@ -135,8 +132,6 @@ if (logoutBtn) {
 // ==========================================
 // 8. COLLECTION DATABASE
 // ==========================================
-// Semua pesan disimpan di collection "messages"
-
 const messagesRef = collection(db, "messages");
 
 
@@ -172,7 +167,6 @@ if (messageForm) {
 
       });
 
-      // Kosongkan input
       messageInput.value = "";
 
       messageInput.focus();
@@ -209,15 +203,13 @@ onSnapshot(q, function (snapshot) {
     return;
   }
 
-
-  // Bersihkan tampilan
   messagesContainer.innerHTML = "";
 
 
-  // Kalau belum ada pesan
   if (snapshot.empty) {
 
-    const emptyMessage = document.createElement("div");
+    const emptyMessage =
+      document.createElement("div");
 
     emptyMessage.className = "empty";
 
@@ -229,7 +221,6 @@ onSnapshot(q, function (snapshot) {
   }
 
 
-  // Tampilkan semua pesan
   snapshot.forEach(function (doc) {
 
     const data = doc.data();
@@ -241,15 +232,11 @@ onSnapshot(q, function (snapshot) {
     const messageDiv =
       document.createElement("div");
 
-
     messageDiv.className = "message";
 
 
-    // Kalau pesan milik sendiri
     if (data.nama === username) {
-
       messageDiv.classList.add("mine");
-
     }
 
 
@@ -307,13 +294,11 @@ onSnapshot(q, function (snapshot) {
     }
 
 
-    // Gabungkan
     messageDiv.appendChild(nameDiv);
 
     messageDiv.appendChild(textDiv);
 
     messageDiv.appendChild(timeDiv);
-
 
     messagesContainer.appendChild(messageDiv);
 
@@ -323,12 +308,10 @@ onSnapshot(q, function (snapshot) {
   // ==================================
   // 11. NOTIFIKASI SUARA
   // ==================================
-
   const jumlahPesanSekarang =
     snapshot.size;
 
 
-  // Jangan bunyikan ketika pertama kali
   if (!pertamaKali) {
 
     if (
@@ -336,7 +319,6 @@ onSnapshot(q, function (snapshot) {
       jumlahPesanSebelumnya
     ) {
 
-      // Mainkan suara
       if (notificationSound) {
 
         notificationSound.currentTime = 0;
@@ -361,14 +343,12 @@ onSnapshot(q, function (snapshot) {
   jumlahPesanSebelumnya =
     jumlahPesanSekarang;
 
-
   pertamaKali = false;
 
 
   // ==================================
-  // 12. AUTO SCROLL KE PESAN TERBARU
+  // 12. AUTO SCROLL
   // ==================================
-
   messagesContainer.scrollTop =
     messagesContainer.scrollHeight;
 
@@ -392,10 +372,162 @@ if (messageInput) {
         e.preventDefault();
 
         if (messageForm) {
-
           messageForm.requestSubmit();
+        }
+
+      }
+
+    }
+  );
+
+}
+
+
+// ==========================================
+// 14. MIC / REKAM SUARA
+// ==========================================
+const micBtn =
+  document.getElementById("micBtn");
+
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
+
+if (micBtn) {
+
+  micBtn.addEventListener(
+    "click",
+    async function () {
+
+      // ==============================
+      // MULAI REKAM
+      // ==============================
+      if (!isRecording) {
+
+        try {
+
+          const stream =
+            await navigator.mediaDevices.getUserMedia({
+              audio: true
+            });
+
+
+          audioChunks = [];
+
+
+          mediaRecorder =
+            new MediaRecorder(stream);
+
+
+          mediaRecorder.ondataavailable =
+            function (event) {
+
+              if (event.data.size > 0) {
+
+                audioChunks.push(
+                  event.data
+                );
+
+              }
+
+            };
+
+
+          mediaRecorder.onstop =
+            function () {
+
+              const audioBlob =
+                new Blob(
+                  audioChunks,
+                  {
+                    type: "audio/webm"
+                  }
+                );
+
+
+              const audioURL =
+                URL.createObjectURL(
+                  audioBlob
+                );
+
+
+              const audio =
+                document.createElement("audio");
+
+
+              audio.controls = true;
+
+              audio.src = audioURL;
+
+
+              messagesContainer.appendChild(
+                audio
+              );
+
+
+              messagesContainer.scrollTop =
+                messagesContainer.scrollHeight;
+
+
+              // Matikan microphone
+              stream
+                .getTracks()
+                .forEach(function (track) {
+
+                  track.stop();
+
+                });
+
+            };
+
+
+          mediaRecorder.start();
+
+
+          isRecording = true;
+
+
+          micBtn.textContent = "⏹️";
+
+          micBtn.classList.add(
+            "recording"
+          );
+
+
+        } catch (error) {
+
+          console.error(error);
+
+          alert(
+            "Microphone tidak bisa digunakan. Izinkan akses microphone di browser."
+          );
 
         }
+
+      }
+
+
+      // ==============================
+      // STOP REKAM
+      // ==============================
+      else {
+
+        if (mediaRecorder) {
+
+          mediaRecorder.stop();
+
+        }
+
+
+        isRecording = false;
+
+
+        micBtn.textContent = "🎙️";
+
+        micBtn.classList.remove(
+          "recording"
+        );
 
       }
 

@@ -2,50 +2,187 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Chat Kelas X RPL</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Live Chat X RPL</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <div class="app">
-    <header class="topbar">
+
+  <!-- =====================================
+       HEADER
+  ====================================== -->
+
+  <header class="topbar">
+
+    <div>
+      <h1>Live Chat</h1>
+      <p>Kelas X RPL</p>
+    </div>
+
+    <div id="connectionStatus" class="status">
+      Online
+    </div>
+
+  </header>
+
+
+  <!-- =====================================
+       HALAMAN MASUK
+  ====================================== -->
+
+  <section id="joinCard" class="join-card">
+
+    <h2>Masuk ke Live Chat</h2>
+
+    <p>
+      Masukkan nama kamu untuk mengikuti
+      sesi live chat.
+    </p>
+
+    <form id="joinForm">
+
+      <input
+        id="nameInput"
+        type="text"
+        maxlength="30"
+        placeholder="Masukkan nama"
+        autocomplete="name"
+        required
+      >
+
+      <button type="submit">
+        Masuk Chat
+      </button>
+
+    </form>
+
+    <small>
+      Target sesi: 2 Guru dan 8 Siswa
+    </small>
+
+  </section>
+
+
+  <!-- =====================================
+       CHAT
+  ====================================== -->
+
+  <main id="chatCard" class="chat-card hidden">
+
+    <!-- HEADER CHAT -->
+
+    <div class="chat-head">
+
       <div>
-        <h1>Live Chat</h1>
-        <p>Kelas X RPL</p>
-      </div>
-      <div class="status" id="connectionStatus">Menghubungkan...</div>
-    </header>
 
-    <section class="join-card" id="joinCard">
-      <h2>Masuk ke Live Chat</h2>
-      <p>Masukkan nama untuk ikut sesi chat.</p>
-      <form id="joinForm">
-        <input id="nameInput" type="text" maxlength="30" placeholder="Nama kamu" autocomplete="name" required>
-        <button type="submit">Masuk Chat</button>
-      </form>
-      <small>Gunakan nama asli peserta agar guru mudah mengenali.</small>
-    </section>
+        <strong>
+          Live Chat Kelas X RPL
+        </strong>
 
-    <main class="chat-card hidden" id="chatCard">
-      <div class="chat-head">
-        <div>
-          <strong id="roomTitle">Live Chat Kelas X RPL</strong>
-          <span id="participantLabel">0 peserta online</span>
-        </div>
-        <button class="secondary" id="logoutBtn" type="button">Keluar</button>
+        <span id="participantLabel">
+          Chat realtime
+        </span>
+
       </div>
 
-      <div class="messages" id="messages" aria-live="polite"></div>
+      <button
+        id="logoutBtn"
+        class="secondary"
+        type="button"
+      >
+        Keluar
+      </button>
 
-      <form class="composer" id="messageForm">
-        <input id="messageInput" type="text" maxlength="500" placeholder="Tulis pesan..." autocomplete="off" required>
-        <button type="submit" id="sendBtn">Kirim</button>
-      </form>
-    </main>
-  </div>
+    </div>
 
-  <audio id="notificationSound" src="assets/notification.mp3" preload="auto"></audio>
 
-  <script type="module" src="main.js"></script>
+    <!-- =================================
+         DAFTAR PESAN
+    ================================== -->
+
+    <div
+      id="messages"
+      class="messages"
+    >
+
+      <div class="empty">
+        Belum ada pesan.
+        Mulai percakapan!
+      </div>
+
+    </div>
+
+
+    <!-- =================================
+         INPUT CHAT
+    ================================== -->
+
+    <form
+      id="messageForm"
+      class="composer"
+    >
+
+      <input
+        id="messageInput"
+        type="text"
+        maxlength="500"
+        placeholder="Tulis pesan..."
+        autocomplete="off"
+        required
+      >
+
+
+      <!-- TOMBOL MICROPHONE -->
+
+      <button
+        id="micBtn"
+        type="button"
+        title="Rekam suara"
+      >
+        🎙️
+      </button>
+
+
+      <!-- TOMBOL KIRIM -->
+
+      <button
+        id="sendBtn"
+        type="submit"
+      >
+        Kirim
+      </button>
+
+    </form>
+
+  </main>
+
+
+  <!-- =====================================
+       AUDIO NOTIFIKASI PESAN BARU
+  ====================================== -->
+
+  <audio
+    id="notificationSound"
+    src="assets/notification.mp3"
+    preload="auto"
+  ></audio>
+
+
+  <!-- =====================================
+       JAVASCRIPT
+  ====================================== -->
+
+  <script
+    type="module"
+    src="main.js"
+  ></script>
+
 </body>
 </html>
