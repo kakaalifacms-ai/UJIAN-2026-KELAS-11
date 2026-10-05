@@ -1,0 +1,27 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /messages/{messageId} {
+
+      // Bisa membaca pesan
+      allow read: if true;
+
+      // Bisa mengirim pesan
+      allow create: if
+        request.resource.data.nama is string
+        && request.resource.data.nama.size() >= 1
+        && request.resource.data.nama.size() <= 30
+        && request.resource.data.pesan is string
+        && request.resource.data.pesan.size() >= 1
+        && request.resource.data.pesan.size() <= 500;
+
+      // Tidak boleh mengubah pesan
+      allow update: if false;
+
+      // Tidak boleh menghapus pesan
+      allow delete: if false;
+    }
+  }
+}
