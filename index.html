@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Chat Kelas X RPL</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>Live Chat</h1>
+        <p>Kelas X RPL</p>
+      </div>
+      <div class="status" id="connectionStatus">Menghubungkan...</div>
+    </header>
+
+    <section class="join-card" id="joinCard">
+      <h2>Masuk ke Live Chat</h2>
+      <p>Masukkan nama untuk ikut sesi chat.</p>
+      <form id="joinForm">
+        <input id="nameInput" type="text" maxlength="30" placeholder="Nama kamu" autocomplete="name" required>
+        <button type="submit">Masuk Chat</button>
+      </form>
+      <small>Gunakan nama asli peserta agar guru mudah mengenali.</small>
+    </section>
+
+    <main class="chat-card hidden" id="chatCard">
+      <div class="chat-head">
+        <div>
+          <strong id="roomTitle">Live Chat Kelas X RPL</strong>
+          <span id="participantLabel">0 peserta online</span>
+        </div>
+        <button class="secondary" id="logoutBtn" type="button">Keluar</button>
+      </div>
+
+      <div class="messages" id="messages" aria-live="polite"></div>
+
+      <form class="composer" id="messageForm">
+        <input id="messageInput" type="text" maxlength="500" placeholder="Tulis pesan..." autocomplete="off" required>
+        <button type="submit" id="sendBtn">Kirim</button>
+      </form>
+    </main>
+  </div>
+
+  <audio id="notificationSound" src="assets/notification.mp3" preload="auto"></audio>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
