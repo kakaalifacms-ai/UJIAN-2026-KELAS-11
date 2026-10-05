@@ -1,6 +1,6 @@
-// ==========================================
-// 1. IMPORT FIREBASE
-// ==========================================
+// ===============================
+// FIREBASE
+// ===============================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
 import {
@@ -14,11 +14,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
-// ==========================================
-// 2. CONFIG FIREBASE
-// ==========================================
+// ===============================
+// FIREBASE CONFIG
+// ===============================
 const firebaseConfig = {
-  apiKey: "AIzaSyC_1XwbW-9zcNkRJXIQr4N1GgAyzQr6O2g",
+  apiKey: "AIzaSyC1_1XwbW-9zcNkRJXIQr4N1GgAyzQr6O2g",
   authDomain: "uasgenap2026-549f7.firebaseapp.com",
   projectId: "uasgenap2026-549f7",
   storageBucket: "uasgenap2026-549f7.firebasestorage.app",
@@ -27,55 +27,99 @@ const firebaseConfig = {
 };
 
 
-// ==========================================
-// 3. HUBUNGKAN FIREBASE
-// ==========================================
+// ===============================
+// INIT FIREBASE
+// ===============================
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-// ==========================================
-// 4. AMBIL ELEMENT HTML
-// ==========================================
-const messageForm = document.getElementById("messageForm");
-const messageInput = document.getElementById("messageInput");
-const messagesContainer = document.getElementById("messages");
-
-const nameInput = document.getElementById("nameInput");
-const joinForm = document.getElementById("joinForm");
-
+// ===============================
+// ELEMENT
+// ===============================
 const joinCard = document.getElementById("joinCard");
 const chatCard = document.getElementById("chatCard");
 
+const joinForm = document.getElementById("joinForm");
+const nameInput = document.getElementById("nameInput");
+
 const logoutBtn = document.getElementById("logoutBtn");
 
-const notificationSound =
-  document.getElementById("notificationSound");
+const messageForm = document.getElementById("messageForm");
+const messageInput = document.getElementById("messageInput");
+
+const messagesContainer = document.getElementById("messages");
+
+const micBtn = document.getElementById("micBtn");
+const notificationSound = document.getElementById("notificationSound");
+
+const connectionStatus =
+  document.getElementById("connectionStatus");
+
+const participantLabel =
+  document.getElementById("participantLabel");
 
 
-// ==========================================
-// 5. NAMA USER
-// ==========================================
+// ===============================
+// USERNAME
+// ===============================
 let username = localStorage.getItem("chatUsername") || "";
 
-if (username && nameInput) {
-  nameInput.value = username;
+
+// ===============================
+// FIRESTORE
+// ===============================
+const messagesRef = collection(db, "messages");
+
+const messagesQuery = query(
+  messagesRef,
+  orderBy("waktu", "asc")
+);
+
+
+// ===============================
+// SHOW CHAT
+// ===============================
+function showChat() {
+  joinCard.classList.add("hidden");
+  chatCard.classList.remove("hidden");
+
+  if (participantLabel) {
+    participantLabel.textContent = `Masuk sebagai ${username}`;
+  }
 }
 
 
-// ==========================================
-// 6. MASUK KE CHAT
-// ==========================================
+// ===============================
+// SHOW JOIN
+// ===============================
+function showJoin() {
+  joinCard.classList.remove("hidden");
+  chatCard.classList.add("hidden");
+}
+
+
+// ===============================
+// CEK LOGIN
+// ===============================
+if (username) {
+  showChat();
+} else {
+  showJoin();
+}
+
+
+// ===============================
+// JOIN
+// ===============================
 if (joinForm) {
-
-  joinForm.addEventListener("submit", function (e) {
-
-    e.preventDefault();
+  joinForm.addEventListener("submit", (event) => {
+    event.preventDefault();
 
     const name = nameInput.value.trim();
 
-    if (name === "") {
-      alert("Masukkan nama terlebih dahulu!");
+    if (!name) {
+      alert("Masukkan nama terlebih dahulu.");
       return;
     }
 
@@ -83,334 +127,368 @@ if (joinForm) {
 
     localStorage.setItem("chatUsername", username);
 
-    if (joinCard) {
-      joinCard.classList.add("hidden");
-    }
+    showChat();
 
-    if (chatCard) {
-      chatCard.classList.remove("hidden");
-    }
-
-    if (messageInput) {
-      messageInput.focus();
-    }
-
+    messageInput.focus();
   });
-
 }
 
 
-// ==========================================
-// 7. KELUAR DARI CHAT
-// ==========================================
+// ===============================
+// LOGOUT
+// ===============================
 if (logoutBtn) {
-
-  logoutBtn.addEventListener("click", function () {
-
+  logoutBtn.addEventListener("click", () => {
     localStorage.removeItem("chatUsername");
 
     username = "";
 
-    if (chatCard) {
-      chatCard.classList.add("hidden");
-    }
+    showJoin();
 
-    if (joinCard) {
-      joinCard.classList.remove("hidden");
-    }
-
-    if (nameInput) {
-      nameInput.value = "";
-      nameInput.focus();
-    }
-
+    nameInput.value = "";
   });
-
 }
 
 
-// ==========================================
-// 8. COLLECTION DATABASE
-// ==========================================
-const messagesRef = collection(db, "messages");
-
-
-// ==========================================
-// 9. KIRIM PESAN
-// ==========================================
+// ===============================
+// KIRIM PESAN TEKS
+// ===============================
 if (messageForm) {
-
-  messageForm.addEventListener("submit", async function (e) {
-
-    e.preventDefault();
+  messageForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
     const text = messageInput.value.trim();
 
-    if (text === "") {
-      return;
-    }
+    if (!text) return;
 
-    if (username === "") {
-      alert("Masukkan nama terlebih dahulu!");
+    if (!username) {
+      alert("Masukkan nama terlebih dahulu.");
       return;
     }
 
     try {
-
       await addDoc(messagesRef, {
-
+        tipe: "text",
         nama: username,
-
         pesan: text,
-
         waktu: serverTimestamp()
-
       });
 
       messageInput.value = "";
-
       messageInput.focus();
 
     } catch (error) {
-
       console.error("Gagal mengirim pesan:", error);
-
-      alert("Pesan gagal dikirim!");
-
+      alert("Pesan gagal dikirim.");
     }
-
   });
-
 }
 
 
-// ==========================================
-// 10. MEMBACA PESAN REALTIME
-// ==========================================
-const q = query(
-  messagesRef,
-  orderBy("waktu", "asc")
-);
+// ===============================
+// FORMAT WAKTU
+// ===============================
+function formatTime(timestamp) {
+  if (!timestamp) return "";
 
+  const date = timestamp.toDate();
 
-let pertamaKali = true;
-let jumlahPesanSebelumnya = 0;
-
-
-onSnapshot(q, function (snapshot) {
-
-  if (!messagesContainer) {
-    return;
-  }
-
-  messagesContainer.innerHTML = "";
-
-
-  if (snapshot.empty) {
-
-    const emptyMessage =
-      document.createElement("div");
-
-    emptyMessage.className = "empty";
-
-    emptyMessage.textContent =
-      "Belum ada pesan. Jadilah yang pertama mengirim pesan!";
-
-    messagesContainer.appendChild(emptyMessage);
-
-  }
-
-
-  snapshot.forEach(function (doc) {
-
-    const data = doc.data();
-
-
-    // ==============================
-    // CONTAINER PESAN
-    // ==============================
-    const messageDiv =
-      document.createElement("div");
-
-    messageDiv.className = "message";
-
-
-    if (data.nama === username) {
-      messageDiv.classList.add("mine");
-    }
-
-
-    // ==============================
-    // NAMA
-    // ==============================
-    const nameDiv =
-      document.createElement("div");
-
-    nameDiv.className = "message-name";
-
-    nameDiv.textContent =
-      data.nama || "Pengguna";
-
-
-    // ==============================
-    // ISI PESAN
-    // ==============================
-    const textDiv =
-      document.createElement("div");
-
-    textDiv.className = "message-text";
-
-    textDiv.textContent =
-      data.pesan || "";
-
-
-    // ==============================
-    // WAKTU
-    // ==============================
-    const timeDiv =
-      document.createElement("div");
-
-    timeDiv.className = "message-time";
-
-
-    if (data.waktu) {
-
-      const date =
-        data.waktu.toDate();
-
-      timeDiv.textContent =
-        date.toLocaleTimeString(
-          "id-ID",
-          {
-            hour: "2-digit",
-            minute: "2-digit"
-          }
-        );
-
-    } else {
-
-      timeDiv.textContent = "...";
-
-    }
-
-
-    messageDiv.appendChild(nameDiv);
-
-    messageDiv.appendChild(textDiv);
-
-    messageDiv.appendChild(timeDiv);
-
-    messagesContainer.appendChild(messageDiv);
-
+  return date.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit"
   });
+}
 
 
-  // ==================================
-  // 11. NOTIFIKASI SUARA
-  // ==================================
-  const jumlahPesanSekarang =
-    snapshot.size;
+// ===============================
+// BUAT PESAN TEKS
+// ===============================
+function createTextMessage(data) {
+  const message = document.createElement("div");
+
+  message.className = "message";
+
+  if (data.nama === username) {
+    message.classList.add("mine");
+  }
+
+  const name = document.createElement("div");
+  name.className = "message-name";
+  name.textContent = data.nama || "Pengguna";
+
+  const text = document.createElement("div");
+  text.className = "message-text";
+  text.textContent = data.pesan || "";
+
+  const time = document.createElement("div");
+  time.className = "message-time";
+  time.textContent = formatTime(data.waktu);
+
+  message.appendChild(name);
+  message.appendChild(text);
+  message.appendChild(time);
+
+  return message;
+}
 
 
-  if (!pertamaKali) {
+// ===============================
+// BUAT PESAN MIC
+// ===============================
+function createAudioMessage(data) {
+  const message = document.createElement("div");
 
-    if (
-      jumlahPesanSekarang >
-      jumlahPesanSebelumnya
-    ) {
+  message.className = "message audio-message";
 
-      if (notificationSound) {
+  if (data.nama === username) {
+    message.classList.add("mine");
+  }
 
-        notificationSound.currentTime = 0;
 
-        notificationSound.play()
-          .catch(function (error) {
+  // NAMA
+  const name = document.createElement("div");
 
-            console.log(
-              "Audio belum diizinkan browser:",
-              error
-            );
+  name.className = "message-name";
 
-          });
+  name.textContent = data.nama || "Pengguna";
+
+
+  // AUDIO
+  const audioBox = document.createElement("div");
+
+  audioBox.className = "audio-box";
+
+
+  // ICON MIC
+  const micIcon = document.createElement("span");
+
+  micIcon.className = "audio-icon";
+
+  micIcon.textContent = "🎙️";
+
+
+  // AUDIO PLAYER
+  const audio = document.createElement("audio");
+
+  audio.controls = true;
+
+  audio.preload = "metadata";
+
+  audio.src = data.audioUrl;
+
+
+  // WAKTU
+  const time = document.createElement("div");
+
+  time.className = "message-time";
+
+  time.textContent = formatTime(data.waktu);
+
+
+  audioBox.appendChild(micIcon);
+  audioBox.appendChild(audio);
+
+  message.appendChild(name);
+  message.appendChild(audioBox);
+  message.appendChild(time);
+
+  return message;
+}
+
+
+// ===============================
+// REALTIME PESAN
+// ===============================
+let firstSnapshot = true;
+
+onSnapshot(
+  messagesQuery,
+  (snapshot) => {
+
+    messagesContainer.innerHTML = "";
+
+    if (snapshot.empty) {
+      const empty = document.createElement("div");
+
+      empty.className = "empty";
+
+      empty.textContent =
+        "Belum ada pesan. Mulai percakapan!";
+
+      messagesContainer.appendChild(empty);
+
+      return;
+    }
+
+
+    snapshot.forEach((doc) => {
+
+      const data = doc.data();
+
+      let messageElement;
+
+
+      // PESAN MIC
+      if (data.tipe === "audio") {
+
+        messageElement =
+          createAudioMessage(data);
 
       }
 
+      // PESAN TEKS
+      else {
+
+        messageElement =
+          createTextMessage(data);
+
+      }
+
+
+      messagesContainer.appendChild(messageElement);
+    });
+
+
+    // AUTO SCROLL
+    messagesContainer.scrollTop =
+      messagesContainer.scrollHeight;
+
+
+    // NOTIFIKASI
+    if (!firstSnapshot) {
+
+      try {
+        notificationSound.currentTime = 0;
+
+        notificationSound.play().catch(() => {});
+      } catch (error) {
+        console.log(error);
+      }
     }
 
+    firstSnapshot = false;
+  },
+
+  (error) => {
+
+    console.error(
+      "Firestore error:",
+      error
+    );
+
+    if (connectionStatus) {
+      connectionStatus.textContent =
+        "Offline";
+    }
   }
+);
 
 
-  jumlahPesanSebelumnya =
-    jumlahPesanSekarang;
-
-  pertamaKali = false;
-
-
-  // ==================================
-  // 12. AUTO SCROLL
-  // ==================================
-  messagesContainer.scrollTop =
-    messagesContainer.scrollHeight;
-
-});
+// ===============================
+// STATUS ONLINE
+// ===============================
+if (connectionStatus) {
+  connectionStatus.textContent = "Online";
+}
 
 
-// ==========================================
-// 13. ENTER UNTUK MENGIRIM PESAN
-// ==========================================
+// ===============================
+// ENTER UNTUK KIRIM
+// ===============================
 if (messageInput) {
 
   messageInput.addEventListener(
     "keydown",
-    function (e) {
+    (event) => {
 
       if (
-        e.key === "Enter" &&
-        !e.shiftKey
+        event.key === "Enter" &&
+        !event.shiftKey
       ) {
 
-        e.preventDefault();
+        event.preventDefault();
 
-        if (messageForm) {
-          messageForm.requestSubmit();
-        }
-
+        messageForm.requestSubmit();
       }
-
     }
   );
-
 }
 
 
-// ==========================================
-// 14. MIC / REKAM SUARA
-// ==========================================
-const micBtn =
-  document.getElementById("micBtn");
-
+// ===============================
+// MICROPHONE
+// ===============================
 let mediaRecorder = null;
+
 let audioChunks = [];
+
 let isRecording = false;
 
+let recordingStartTime = 0;
 
+let recordingTimer = null;
+
+
+// ===============================
+// UPDATE TIMER MIC
+// ===============================
+function updateRecordingTime() {
+
+  if (!isRecording) return;
+
+  const elapsed =
+    Math.floor(
+      (Date.now() - recordingStartTime) / 1000
+    );
+
+  const minutes =
+    Math.floor(elapsed / 60);
+
+  const seconds =
+    elapsed % 60;
+
+  const timeText =
+    `${minutes}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+
+
+  if (micBtn) {
+    micBtn.textContent =
+      `⏹️ ${timeText}`;
+  }
+}
+
+
+// ===============================
+// MULAI / STOP MIC
+// ===============================
 if (micBtn) {
 
   micBtn.addEventListener(
     "click",
-    async function () {
+    async () => {
 
-      // ==============================
+      // =========================
       // MULAI REKAM
-      // ==============================
+      // =========================
       if (!isRecording) {
+
+        if (!username) {
+          alert(
+            "Masukkan nama terlebih dahulu."
+          );
+          return;
+        }
+
 
         try {
 
           const stream =
-            await navigator.mediaDevices.getUserMedia({
-              audio: true
-            });
+            await navigator.mediaDevices
+              .getUserMedia({
+                audio: true
+              });
 
 
           audioChunks = [];
@@ -421,21 +499,19 @@ if (micBtn) {
 
 
           mediaRecorder.ondataavailable =
-            function (event) {
+            (event) => {
 
               if (event.data.size > 0) {
 
                 audioChunks.push(
                   event.data
                 );
-
               }
-
             };
 
 
           mediaRecorder.onstop =
-            function () {
+            () => {
 
               const audioBlob =
                 new Blob(
@@ -452,86 +528,198 @@ if (micBtn) {
                 );
 
 
-              const audio =
-                document.createElement("audio");
+              // =====================
+              // BUAT PESAN MIC LOKAL
+              // =====================
+              const message =
+                document.createElement(
+                  "div"
+                );
 
+              message.className =
+                "message audio-message mine";
+
+
+              // NAMA
+              const name =
+                document.createElement(
+                  "div"
+                );
+
+              name.className =
+                "message-name";
+
+              name.textContent =
+                username;
+
+
+              // AUDIO BOX
+              const audioBox =
+                document.createElement(
+                  "div"
+                );
+
+              audioBox.className =
+                "audio-box";
+
+
+              // ICON MIC
+              const micIcon =
+                document.createElement(
+                  "span"
+                );
+
+              micIcon.className =
+                "audio-icon";
+
+              micIcon.textContent =
+                "🎙️";
+
+
+              // AUDIO
+              const audio =
+                document.createElement(
+                  "audio"
+                );
 
               audio.controls = true;
 
-              audio.src = audioURL;
+              audio.preload =
+                "metadata";
+
+              audio.src =
+                audioURL;
 
 
-              messagesContainer.appendChild(
+              // WAKTU
+              const time =
+                document.createElement(
+                  "div"
+                );
+
+              time.className =
+                "message-time";
+
+              time.textContent =
+                new Date()
+                  .toLocaleTimeString(
+                    "id-ID",
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }
+                  );
+
+
+              audioBox.appendChild(
+                micIcon
+              );
+
+              audioBox.appendChild(
                 audio
               );
 
 
+              message.appendChild(
+                name
+              );
+
+              message.appendChild(
+                audioBox
+              );
+
+              message.appendChild(
+                time
+              );
+
+
+              // TAMPILKAN
+              messagesContainer.appendChild(
+                message
+              );
+
+
               messagesContainer.scrollTop =
-                messagesContainer.scrollHeight;
+                messagesContainer
+                  .scrollHeight;
 
 
-              // Matikan microphone
+              // MATIKAN MIC
               stream
                 .getTracks()
-                .forEach(function (track) {
-
-                  track.stop();
-
-                });
-
+                .forEach(
+                  track =>
+                    track.stop()
+                );
             };
 
 
           mediaRecorder.start();
 
-
           isRecording = true;
 
+          recordingStartTime =
+            Date.now();
 
-          micBtn.textContent = "⏹️";
+
+          // TIMER
+          recordingTimer =
+            setInterval(
+              updateRecordingTime,
+              1000
+            );
+
 
           micBtn.classList.add(
             "recording"
           );
 
+          micBtn.textContent =
+            "⏹️ 0:00";
+
 
         } catch (error) {
 
-          console.error(error);
+          console.error(
+            "Microphone error:",
+            error
+          );
 
           alert(
             "Microphone tidak bisa digunakan. Izinkan akses microphone di browser."
           );
-
         }
+
 
       }
 
-
-      // ==============================
+      // =========================
       // STOP REKAM
-      // ==============================
+      // =========================
       else {
 
         if (mediaRecorder) {
 
           mediaRecorder.stop();
-
         }
 
 
         isRecording = false;
 
 
-        micBtn.textContent = "🎙️";
+        clearInterval(
+          recordingTimer
+        );
+
 
         micBtn.classList.remove(
           "recording"
         );
 
-      }
 
+        micBtn.textContent =
+          "🎙️";
+      }
     }
   );
-
 }
